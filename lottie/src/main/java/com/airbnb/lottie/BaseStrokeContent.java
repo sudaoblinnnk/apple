@@ -227,7 +227,7 @@ abstract class BaseStrokeContent implements DrawingContent, BaseKeyframeAnimatio
     }
 
     float scale = lottieDrawable.getScale();
-    scale *= Utils.getScale(parentMatrix);
+    // scale *= Utils.getScale(parentMatrix);
     for (int i = 0; i < dashPatternAnimations.size(); i++) {
       dashPatternValues[i] = dashPatternAnimations.get(i).getValue();
       // If the value of the dash pattern or gap is too small, the number of individual sections
