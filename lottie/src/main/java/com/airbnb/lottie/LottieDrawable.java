@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
+import android.graphics.SurfaceTexture;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.FloatRange;
@@ -21,6 +22,8 @@ import android.view.animation.LinearInterpolator;
 import java.util.HashSet;
 import java.util.Set;
 
+//kurt means todo
+
 /**
  * This can be used to show an lottie animation in any place that would normally take a drawable.
  * If there are masks or mattes, then you MUST call {@link #recycleBitmaps()} when you are done
@@ -30,7 +33,7 @@ import java.util.Set;
  * handles bitmap recycling and asynchronous loading
  * of compositions.
  */
-public class LottieDrawable extends Drawable implements Drawable.Callback {
+public class LottieDrawable extends SurfaceTexture implements DrawableCallback {
   private static final String TAG = LottieDrawable.class.getSimpleName();
   private final Matrix matrix = new Matrix();
   private LottieComposition composition;
@@ -50,7 +53,10 @@ public class LottieDrawable extends Drawable implements Drawable.Callback {
   @Nullable private CompositionLayer compositionLayer;
   private int alpha = 255;
 
-  @SuppressWarnings("WeakerAccess") public LottieDrawable() {
+  DrawableCallback mDrawableCallback;
+
+  @SuppressWarnings("WeakerAccess") public LottieDrawable(int texName) {
+    super(texName);
     animator.setRepeatCount(0);
     animator.setInterpolator(new LinearInterpolator());
     animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -190,22 +196,26 @@ public class LottieDrawable extends Drawable implements Drawable.Callback {
     invalidateSelf();
   }
 
-  @Override public void invalidateSelf() {
-    final Callback callback = getCallback();
+  //@Override
+  public void invalidateSelf() {
+    final DrawableCallback callback = getCallback();
     if (callback != null) {
       callback.invalidateDrawable(this);
     }
   }
 
-  @Override public void setAlpha(@IntRange(from = 0, to = 255) int alpha) {
+  //@Override
+  public void setAlpha(@IntRange(from = 0, to = 255) int alpha) {
     this.alpha = alpha;
   }
 
-  @Override public int getAlpha() {
+  //@Override
+  public int getAlpha() {
     return alpha;
   }
 
-  @Override public void setColorFilter(@Nullable ColorFilter colorFilter) {
+  //@Override
+  public void setColorFilter(@Nullable ColorFilter colorFilter) {
     // Do nothing.
   }
 
@@ -270,11 +280,13 @@ public class LottieDrawable extends Drawable implements Drawable.Callback {
     compositionLayer.addColorFilter(layerName, contentName, colorFilter);
   }
 
-  @Override public int getOpacity() {
+  //@Override
+  public int getOpacity() {
     return PixelFormat.TRANSLUCENT;
   }
 
-  @Override public void draw(@NonNull Canvas canvas) {
+  //@Override
+  public void draw(@NonNull Canvas canvas) {
     if (compositionLayer == null) {
       return;
     }
@@ -402,8 +414,9 @@ public class LottieDrawable extends Drawable implements Drawable.Callback {
     if (composition == null) {
       return;
     }
-    setBounds(0, 0, (int) (composition.getBounds().width() * scale),
-        (int) (composition.getBounds().height() * scale));
+    //kurt
+    //setBounds(0, 0, (int) (composition.getBounds().width() * scale),
+    //    (int) (composition.getBounds().height() * scale));
   }
 
   @SuppressWarnings("WeakerAccess") public void cancelAnimation() {
@@ -428,11 +441,13 @@ public class LottieDrawable extends Drawable implements Drawable.Callback {
     animator.removeListener(listener);
   }
 
-  @Override public int getIntrinsicWidth() {
+  //@Override
+  public int getIntrinsicWidth() {
     return composition == null ? -1 : (int) (composition.getBounds().width() * scale);
   }
 
-  @Override public int getIntrinsicHeight() {
+  //@Override
+  public int getIntrinsicHeight() {
     return composition == null ? -1 : (int) (composition.getBounds().height() * scale);
   }
 
@@ -456,7 +471,7 @@ public class LottieDrawable extends Drawable implements Drawable.Callback {
   }
 
   private @Nullable Context getContext() {
-    Callback callback = getCallback();
+    DrawableCallback callback = getCallback();
     if (callback == null) {
       return null;
     }
@@ -471,28 +486,37 @@ public class LottieDrawable extends Drawable implements Drawable.Callback {
    * These Drawable.Callback methods proxy the calls so that this is the drawable that is
    * actually invalidated, not a child one which will not pass the view's validateDrawable check.
    */
-  @Override public void invalidateDrawable(@NonNull Drawable who) {
-    Callback callback = getCallback();
+  @Override public void invalidateDrawable(@NonNull SurfaceTexture who) {
+    DrawableCallback callback = getCallback();
     if (callback == null) {
       return;
     }
     callback.invalidateDrawable(this);
   }
 
-  @Override public void scheduleDrawable(@NonNull Drawable who, @NonNull Runnable what, long when) {
-    Callback callback = getCallback();
+  @Override
+  public void scheduleDrawable(@NonNull SurfaceTexture who, @NonNull Runnable what, long when) {
+    DrawableCallback callback = getCallback();
     if (callback == null) {
       return;
     }
     callback.scheduleDrawable(this, what, when);
   }
 
-  @Override public void unscheduleDrawable(@NonNull Drawable who, @NonNull Runnable what) {
-    Callback callback = getCallback();
+  @Override public void unscheduleDrawable(@NonNull SurfaceTexture who, @NonNull Runnable what) {
+    DrawableCallback callback = getCallback();
     if (callback == null) {
       return;
     }
     callback.unscheduleDrawable(this, what);
+  }
+
+  private DrawableCallback getCallback() {
+    return mDrawableCallback;
+  }
+
+  public void setCallback(DrawableCallback dc) {
+     mDrawableCallback = dc;
   }
 
   private static class ColorFilterData {

@@ -18,6 +18,7 @@ import android.support.v7.widget.AppCompatImageView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.TextureView;
 
 import org.json.JSONObject;
 
@@ -39,7 +40,7 @@ import java.util.Map;
  * You can manually set the progress of the animation with {@link #setProgress(float)} or
  * {@link R.attr#lottie_progress}
  */
-public class LottieAnimationView extends AppCompatImageView {
+public class LottieAnimationView extends TextureView {
   private static final String TAG = LottieAnimationView.class.getSimpleName();
 
   /**

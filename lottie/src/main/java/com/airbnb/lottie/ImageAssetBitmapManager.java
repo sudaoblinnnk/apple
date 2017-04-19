@@ -24,7 +24,7 @@ class ImageAssetBitmapManager {
   private final Map<String, LottieImageAsset> imageAssets;
   private final Map<String, Bitmap> bitmaps = new HashMap<>();
 
-  ImageAssetBitmapManager(Drawable.Callback callback, String imagesFolder,
+  ImageAssetBitmapManager(DrawableCallback callback, String imagesFolder,
       ImageAssetDelegate assetDelegate, Map<String, LottieImageAsset> imageAssets) {
     assertNotNull(callback);
 
