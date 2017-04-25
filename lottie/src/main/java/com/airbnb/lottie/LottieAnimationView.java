@@ -4,7 +4,10 @@ import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Canvas;
 import android.graphics.ColorFilter;
+import android.graphics.Rect;
+import android.graphics.SurfaceTexture;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Parcel;
@@ -19,6 +22,9 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.TextureView;
+
+import com.airbnb.lottie.playvideo_texuture.TextureSurfaceRenderer;
+import com.airbnb.lottie.playvideo_texuture.VideoTextureSurfaceRenderer;
 
 import org.json.JSONObject;
 
@@ -40,7 +46,7 @@ import java.util.Map;
  * You can manually set the progress of the animation with {@link #setProgress(float)} or
  * {@link R.attr#lottie_progress}
  */
-public class LottieAnimationView extends TextureView {
+public class LottieAnimationView extends TextureView implements DrawableCallback, TextureView.SurfaceTextureListener {
   private static final String TAG = LottieAnimationView.class.getSimpleName();
 
   /**
@@ -67,7 +73,8 @@ public class LottieAnimationView extends TextureView {
         }
       };
 
-  private final LottieDrawable lottieDrawable = new LottieDrawable();
+  //kurt
+  private LottieDrawable lottieDrawable;
   private CacheStrategy defaultCacheStrategy;
   private String animationName;
   private boolean wasAnimatingWhenDetached = false;
@@ -94,21 +101,43 @@ public class LottieAnimationView extends TextureView {
     init(attrs);
   }
 
+  private boolean isSystemAnimationsAreDisabled;
+  private boolean isLoop;
+  private String animationFileName;
+  private String assetFolder;
+  private float initProgress;
+  private boolean isEnableMergePathsForKitKatAndAbove;
+
   private void init(@Nullable AttributeSet attrs) {
     TypedArray ta = getContext().obtainStyledAttributes(attrs, R.styleable.LottieAnimationView);
     String fileName = ta.getString(R.styleable.LottieAnimationView_lottie_fileName);
     if (!isInEditMode() && fileName != null) {
-      setAnimation(fileName);
+      animationFileName = fileName;
+      //kurt
+      //setAnimation(fileName);
     }
     if (ta.getBoolean(R.styleable.LottieAnimationView_lottie_autoPlay, false)) {
-      lottieDrawable.playAnimation();
+      //kurt
+      //lottieDrawable.playAnimation();
       autoPlay = true;
     }
-    lottieDrawable.loop(ta.getBoolean(R.styleable.LottieAnimationView_lottie_loop, false));
-    setImageAssetsFolder(ta.getString(R.styleable.LottieAnimationView_lottie_imageAssetsFolder));
-    setProgress(ta.getFloat(R.styleable.LottieAnimationView_lottie_progress, 0));
-    enableMergePathsForKitKatAndAbove(ta.getBoolean(
-        R.styleable.LottieAnimationView_lottie_enableMergePathsForKitKatAndAbove, false));
+    //kurt
+    //lottieDrawable.loop(ta.getBoolean(R.styleable.LottieAnimationView_lottie_loop, false));
+    isLoop = ta.getBoolean(R.styleable.LottieAnimationView_lottie_loop, false);
+    //kurt
+    //setImageAssetsFolder(ta.getString(R.styleable.LottieAnimationView_lottie_imageAssetsFolder));
+    assetFolder = ta.getString(R.styleable.LottieAnimationView_lottie_imageAssetsFolder);
+
+    //kurt
+    //setProgress(ta.getFloat(R.styleable.LottieAnimationView_lottie_progress, 0));
+    initProgress = ta.getFloat(R.styleable.LottieAnimationView_lottie_progress, 0);
+
+    //kurt
+    //enableMergePathsForKitKatAndAbove(ta.getBoolean(
+    //    R.styleable.LottieAnimationView_lottie_enableMergePathsForKitKatAndAbove, false));
+    isEnableMergePathsForKitKatAndAbove = ta.getBoolean(
+            R.styleable.LottieAnimationView_lottie_enableMergePathsForKitKatAndAbove, false);
+
     int cacheStrategy = ta.getInt(
         R.styleable.LottieAnimationView_lottie_cacheStrategy,
         CacheStrategy.None.ordinal());
@@ -120,11 +149,16 @@ public class LottieAnimationView extends TextureView {
     float systemAnimationScale = Settings.Global.getFloat(getContext().getContentResolver(),
         Settings.Global.ANIMATOR_DURATION_SCALE, 1.0f);
       if (systemAnimationScale == 0f) {
-        lottieDrawable.systemAnimationsAreDisabled();
+        //kurt
+        //lottieDrawable.systemAnimationsAreDisabled();
+        isSystemAnimationsAreDisabled = true;
       }
     }
+    setOpaque(false);
+    setSurfaceTextureListener(this);
   }
 
+  /*kurt
   @Override public void setImageResource(int resId) {
     super.setImageResource(resId);
     recycleBitmaps();
@@ -136,6 +170,7 @@ public class LottieAnimationView extends TextureView {
     }
     super.setImageDrawable(drawable);
   }
+  */
 
   /**
    * Add a color filter to specific content on a specific layer.
@@ -172,7 +207,7 @@ public class LottieAnimationView extends TextureView {
   @SuppressWarnings("unused") public void clearColorFilters() {
     lottieDrawable.clearColorFilters();
   }
-
+/*
   @Override public void invalidateDrawable(@NonNull Drawable dr) {
     if (getDrawable() == lottieDrawable) {
       // We always want to invalidate the root drawable to it redraws the whole drawable.
@@ -183,6 +218,7 @@ public class LottieAnimationView extends TextureView {
       super.invalidateDrawable(dr);
     }
   }
+*/
 
   @Override protected Parcelable onSaveInstanceState() {
     Parcelable superState = super.onSaveInstanceState();
@@ -367,8 +403,8 @@ public class LottieAnimationView extends TextureView {
 
     // If you set a different composition on the view, the bounds will not update unless
     // the drawable is different than the original.
-    setImageDrawable(null);
-    setImageDrawable(lottieDrawable);
+    //setImageDrawable(null);//kurt
+    //setImageDrawable(lottieDrawable);//kurt
 
     this.composition = composition;
 
@@ -428,7 +464,11 @@ public class LottieAnimationView extends TextureView {
   }
 
   public void playAnimation() {
-    lottieDrawable.playAnimation();
+    //kurt
+    if (lottieDrawable != null) {
+      lottieDrawable.playAnimation();
+    }
+
   }
 
   public void resumeAnimation() {
@@ -467,9 +507,13 @@ public class LottieAnimationView extends TextureView {
    */
   public void setScale(float scale) {
     lottieDrawable.setScale(scale);
-    if (getDrawable() == lottieDrawable) {
-      setImageDrawable(null);
-      setImageDrawable(lottieDrawable);
+    //kurt
+    //if (getDrawable() == lottieDrawable) {
+    if (getSurfaceTexture() == lottieDrawable) {
+      //kurt
+      //setImageDrawable(null);
+      //setImageDrawable(lottieDrawable);
+      setSurfaceTexture(lottieDrawable);
     }
   }
 
@@ -488,7 +532,10 @@ public class LottieAnimationView extends TextureView {
   }
 
   public void setProgress(@FloatRange(from = 0f, to = 1f) float progress) {
-    lottieDrawable.setProgress(progress);
+    if (lottieDrawable != null) {
+      lottieDrawable.setProgress(progress);
+    }
+
   }
 
   @FloatRange(from = 0.0f, to = 1.0f) public float getProgress() {
@@ -538,4 +585,115 @@ public class LottieAnimationView extends TextureView {
           }
         };
   }
+
+
+  @Override
+  public void invalidateDrawable(@NonNull SurfaceTexture who) {
+    LottieDrawable dr = (LottieDrawable) who;
+    Canvas canvas = lockCanvas();
+
+    if (canvas == null) {
+      return;
+    }
+
+    canvas.save();
+    dr.draw(canvas);
+    canvas.restore();
+
+    unlockCanvasAndPost(canvas);
+
+  }
+
+  @Override
+  public void scheduleDrawable(@NonNull SurfaceTexture who, @NonNull Runnable what, long when) {
+
+  }
+
+  @Override
+  public void unscheduleDrawable(@NonNull SurfaceTexture who, @NonNull Runnable what) {
+
+  }
+
+  /////////////////////////////
+
+  @Override
+  public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
+    if (L.DBG) {
+      Log.d(TAG, "onSurfaceTextureAvailable w : " + width);
+      Log.d(TAG, "onSurfaceTextureAvailable h : " + height);
+    }
+    lottieDrawable = new LottieDrawable(initSurface(surfaceTexture));
+
+    setLottieDrawableInitFeature();
+    if (L.DBG) {
+      Log.d(TAG, "onSurfaceTextureAvailable Canvas ==  " + lockCanvas());
+    }
+  }
+
+  @Override
+  public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+
+  }
+
+  @Override
+  public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+    return false;
+  }
+
+  @Override
+  public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+
+  }
+
+  /////////////////////////////
+
+
+  private TextureSurfaceRenderer videoRenderer;
+
+  private void setLottieDrawableInitFeature() {
+    if (animationFileName != null) {
+      setAnimation(animationFileName);
+    }
+    //kurt
+    if (autoPlay) {
+      lottieDrawable.playAnimation();
+    }
+    if (isLoop) {
+      lottieDrawable.loop(isLoop);
+    }
+    if (assetFolder != null) {
+      setImageAssetsFolder(assetFolder);
+    }
+
+    if (isSystemAnimationsAreDisabled) {
+      lottieDrawable.systemAnimationsAreDisabled();
+    }
+    setProgress(initProgress);
+
+    enableMergePathsForKitKatAndAbove(isEnableMergePathsForKitKatAndAbove);
+    if (L.DBG) {
+      Log.d(TAG, "playAnimation ");
+    }
+    setProgress(0);
+    playAnimation();
+  }
+
+  private int initSurface(SurfaceTexture surfaceTexture) {
+    int screenWidth = Utils.getScreenWidth(getContext());
+    int screenHeight = Utils.getScreenHeight(getContext());
+
+    videoRenderer = new VideoTextureSurfaceRenderer(getContext(), surfaceTexture, screenWidth, screenHeight);
+
+    while (videoRenderer.getVideoTexture() == null) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
+    return videoRenderer.getTextureId();
+
+  }
+
 }
