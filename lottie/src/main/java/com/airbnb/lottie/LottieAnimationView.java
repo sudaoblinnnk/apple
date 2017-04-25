@@ -509,12 +509,12 @@ public class LottieAnimationView extends TextureView implements DrawableCallback
     lottieDrawable.setScale(scale);
     //kurt
     //if (getDrawable() == lottieDrawable) {
-    if (getSurfaceTexture() == lottieDrawable) {
+    //if (getSurfaceTexture() == lottieDrawable) {
       //kurt
       //setImageDrawable(null);
       //setImageDrawable(lottieDrawable);
-      setSurfaceTexture(lottieDrawable);
-    }
+      //setSurfaceTexture(lottieDrawable);
+    //}
   }
 
   public float getScale() {
@@ -588,7 +588,7 @@ public class LottieAnimationView extends TextureView implements DrawableCallback
 
 
   @Override
-  public void invalidateDrawable(@NonNull SurfaceTexture who) {
+  public void invalidateDrawable(@NonNull LottieDrawable who) {
     LottieDrawable dr = (LottieDrawable) who;
     Canvas canvas = lockCanvas();
 
@@ -605,12 +605,12 @@ public class LottieAnimationView extends TextureView implements DrawableCallback
   }
 
   @Override
-  public void scheduleDrawable(@NonNull SurfaceTexture who, @NonNull Runnable what, long when) {
+  public void scheduleDrawable(@NonNull LottieDrawable who, @NonNull Runnable what, long when) {
 
   }
 
   @Override
-  public void unscheduleDrawable(@NonNull SurfaceTexture who, @NonNull Runnable what) {
+  public void unscheduleDrawable(@NonNull LottieDrawable who, @NonNull Runnable what) {
 
   }
 
@@ -622,11 +622,11 @@ public class LottieAnimationView extends TextureView implements DrawableCallback
       Log.d(TAG, "onSurfaceTextureAvailable w : " + width);
       Log.d(TAG, "onSurfaceTextureAvailable h : " + height);
     }
-    lottieDrawable = new LottieDrawable(initSurface(surfaceTexture));
-
+    //lottieDrawable = new LottieDrawable(initSurface(surfaceTexture));
+    lottieDrawable = new LottieDrawable(0);
     setLottieDrawableInitFeature();
     if (L.DBG) {
-      Log.d(TAG, "onSurfaceTextureAvailable Canvas ==  " + lockCanvas());
+      //Log.d(TAG, "onSurfaceTextureAvailable Canvas ==  " + lockCanvas());
     }
   }
 

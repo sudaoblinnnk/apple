@@ -5,10 +5,10 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 
 public interface DrawableCallback {
-  public void invalidateDrawable(@NonNull SurfaceTexture who);
+  public void invalidateDrawable(@NonNull LottieDrawable who);
 
-  public void scheduleDrawable(@NonNull SurfaceTexture who, @NonNull Runnable what, long when);
+  public void scheduleDrawable(@NonNull LottieDrawable who, @NonNull Runnable what, long when);
 
-  public void unscheduleDrawable(@NonNull SurfaceTexture who, @NonNull Runnable what);
+  public void unscheduleDrawable(@NonNull LottieDrawable who, @NonNull Runnable what);
 
 }

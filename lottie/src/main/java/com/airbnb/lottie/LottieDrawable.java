@@ -33,7 +33,7 @@ import java.util.Set;
  * handles bitmap recycling and asynchronous loading
  * of compositions.
  */
-public class LottieDrawable extends SurfaceTexture implements DrawableCallback {
+public class LottieDrawable /* extends SurfaceTexture */ implements DrawableCallback {
   private static final String TAG = LottieDrawable.class.getSimpleName();
   private final Matrix matrix = new Matrix();
   private LottieComposition composition;
@@ -56,7 +56,7 @@ public class LottieDrawable extends SurfaceTexture implements DrawableCallback {
   DrawableCallback mDrawableCallback;
 
   @SuppressWarnings("WeakerAccess") public LottieDrawable(int texName) {
-    super(texName);
+    //super(texName);
     animator.setRepeatCount(0);
     animator.setInterpolator(new LinearInterpolator());
     animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -486,7 +486,7 @@ public class LottieDrawable extends SurfaceTexture implements DrawableCallback {
    * These Drawable.Callback methods proxy the calls so that this is the drawable that is
    * actually invalidated, not a child one which will not pass the view's validateDrawable check.
    */
-  @Override public void invalidateDrawable(@NonNull SurfaceTexture who) {
+  @Override public void invalidateDrawable(@NonNull LottieDrawable who) {
     DrawableCallback callback = getCallback();
     if (callback == null) {
       return;
@@ -495,7 +495,7 @@ public class LottieDrawable extends SurfaceTexture implements DrawableCallback {
   }
 
   @Override
-  public void scheduleDrawable(@NonNull SurfaceTexture who, @NonNull Runnable what, long when) {
+  public void scheduleDrawable(@NonNull LottieDrawable who, @NonNull Runnable what, long when) {
     DrawableCallback callback = getCallback();
     if (callback == null) {
       return;
@@ -503,7 +503,7 @@ public class LottieDrawable extends SurfaceTexture implements DrawableCallback {
     callback.scheduleDrawable(this, what, when);
   }
 
-  @Override public void unscheduleDrawable(@NonNull SurfaceTexture who, @NonNull Runnable what) {
+  @Override public void unscheduleDrawable(@NonNull LottieDrawable who, @NonNull Runnable what) {
     DrawableCallback callback = getCallback();
     if (callback == null) {
       return;
