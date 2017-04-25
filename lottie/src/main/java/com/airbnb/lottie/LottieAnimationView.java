@@ -5,7 +5,9 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorFilter;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.graphics.drawable.Drawable;
@@ -597,11 +599,17 @@ public class LottieAnimationView extends TextureView implements DrawableCallback
     }
 
     canvas.save();
+    clearCanvas(canvas);
     dr.draw(canvas);
     canvas.restore();
 
     unlockCanvasAndPost(canvas);
 
+  }
+
+  private boolean clearCanvas(Canvas canvas){
+    canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+    return false;
   }
 
   @Override
@@ -695,5 +703,6 @@ public class LottieAnimationView extends TextureView implements DrawableCallback
     return videoRenderer.getTextureId();
 
   }
+
 
 }
