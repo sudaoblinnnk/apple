@@ -596,6 +596,8 @@ public class LottieAnimationView extends TextureView implements DrawableCallback
 
     if (canvas == null) {
       return;
+    } else {
+      Log.d(L.TAG, "isHardwareAccelerated : " + canvas.isHardwareAccelerated());
     }
 
     canvas.save();
@@ -659,6 +661,7 @@ public class LottieAnimationView extends TextureView implements DrawableCallback
   private TextureSurfaceRenderer videoRenderer;
 
   private void setLottieDrawableInitFeature() {
+    useExperimentalHardwareAcceleration();
     if (animationFileName != null) {
       setAnimation(animationFileName);
     }
